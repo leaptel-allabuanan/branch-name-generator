@@ -3,54 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Branch Name Generator</title>
+    <title>Ticket Branch Name Generator</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-        textarea { width: 90%; height: 100px; margin: 10px 0; }
+        input, textarea { width: 90%; margin: 10px 0; padding: 10px; font-size: 16px; }
         button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
         #output { font-weight: bold; margin-top: 20px; }
     </style>
 </head>
 <body>
-<h2>Branch Name Generator</h2>
-<textarea id="inputText" placeholder="Paste ticket name here from RT..."></textarea>
+<h2>Ticket Branch Name Generator</h2>
+
+<input type="text" id="fullName" placeholder="Enter your full name">
+<br>
+<textarea id="inputText" placeholder="Paste ticket name here..."></textarea>
 <br>
 <button onclick="generateBranchName()">Generate</button>
 <br>
 <p id="output"></p>
 
 <script>
-    const SUFFIX = 'al';
-
     function generateBranchName() {
+        let fullName = document.getElementById("fullName").value.trim();
         let input = document.getElementById("inputText").value.trim();
         let currentDate = new Date().toISOString().slice(0, 10).replace(/-/g, ""); // YYYYMMDD
 
-        let branchName;
-        if (input.startsWith("#")) {
-            // Format: #518430: Add stop date to SIP number when service becomes inactive
-            branchName = "rt" + input.replace(": ", "-").replace(/\s+/g, "_") + "-" + currentDate + "-" + SUFFIX;
-        } else {
-            // Format: Any other string
-            branchName = currentDate + "-" + input.replace(/\s+/g, "_") + "-" + SUFFIX;
+        if (!fullName || !input) {
+            alert("Please enter your full name and ticket details.");
+            return;
         }
 
-        // Remove brackets if present
-        branchName = branchName.replace(/\[|\]/g, "");
+        let initials = fullName.split(" ").map(word => word.charAt(0).toLowerCase()).join(""); // Extract initials
+        let branchName;
 
-        // Display and copy to clipboard
+        if (input.startsWith("#")) {
+            branchName = "rt" + input.replace(": ", "-").replace(/\s+/g, "_") + "-" + currentDate + "-" + initials;
+        } else {
+            branchName = currentDate + "-" + input.replace(/\s+/g, "_") + "-" + initials;
+        }
+
+        branchName = branchName.replace(/\[|\]/g, ""); // Remove brackets if present
+
         document.getElementById("output").innerText = `Copied: ${branchName}`;
         navigator.clipboard.writeText(branchName).then(() => {
             alert("Branch name copied to clipboard!");
         }).catch(err => {
             console.error("Clipboard copy failed", err);
         });
-
-        // Optional: Log to browser storage (simulating PHP log file)
-        let logEntry = `${new Date().toISOString()} - ${branchName} (${input})`;
-        let logs = JSON.parse(localStorage.getItem("branchLogs")) || [];
-        logs.push(logEntry);
-        localStorage.setItem("branchLogs", JSON.stringify(logs));
     }
 </script>
 </body>
